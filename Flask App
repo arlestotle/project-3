@@ -1,0 +1,43 @@
+# Import the dependencies.
+import numpy as np
+import flask 
+print(flask.__version__)
+from pymongo import MongoClient
+import json
+import requests 
+from pprint import pprint
+
+from flask import Flask, jsonify, render_template
+from flask_pymongo import PyMongo
+from flask_cors import CORS, cross_origin
+
+
+#################################################
+# Flask Setup
+#################################################
+app = Flask(__name__)
+CORS(app, support_credentials=True)
+
+mongo = MongoClient(port=27017)
+
+#################################################
+# Flask Routes
+#################################################
+@app.route("/")
+def home_page():
+
+    db = mongo["cleaned"]
+    cases = db["cases"]
+    data = list(cases.find({}))
+
+    for i in range(len(data)):
+        correctId = data[i]["_id"]
+        correctId = str(correctId).split("(")[0]
+        data[i]["_id"] = correctId 
+
+    return jsonify(data)
+
+
+
+if __name__ == "__main__":
+    app.run(debug=True)
